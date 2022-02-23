@@ -1,12 +1,15 @@
+const userModel = require("../models/user-model");
 const hashService = require("../services/hash-service");
 const otpService = require("../services/otp-service");
+const tokenService = require("../services/token-service");
+const userService = require("../services/user-service");
 
 class AuthController {
     async sendOtp(req, res) {
         const { phone } = req.body;
 
         if (!phone) {
-            res.status(400).json({ msg: 'Phone Field is required' })
+            return res.status(400).json({ msg: 'Phone Field is required' })
         }
 
         const otp = await otpService.generateOtp()
@@ -30,29 +33,48 @@ class AuthController {
         }
     }
 
-    verifyOtp(req, res) {
+    async verifyOtp(req, res) {
         const { otp, hash, phone } = req.body;
 
         if (!otp || !hash || !phone) {
-            res.status(400).json({ msg: 'All Fields are required' })
+            return res.status(400).json({ msg: 'All Fields are required' })
         }
 
         const [hashedOtp, expires] = hash.split('.');
 
-        if (Date.now() > expires) {
-            res.status(400).json({ msg: 'OTP Expired' })
+        if (Date.now() > +expires) {
+            return res.status(400).json({ msg: 'OTP Expired' })
         }
 
         const data = `${phone}.${otp}.${expires}`
-        const isValid = otpService.verifyOtp(hashedOtp, data)
+        const isValid = await otpService.verifyOtp(hashedOtp, data)
 
         if (!isValid) {
-            res.status(400).json({ msg: 'Invalid OTP' })
+            return res.status(400).json({ msg: 'Invalid OTP' })
         }
 
         let user;
-        let accessToken;
-        let refreshToken;
+
+        try {
+            user = await userService.findUser({ phone })
+            if (!user) {
+                user = await userService.createUser({ phone })
+            }
+        } catch (err) {
+            console.log(err)
+            return res.status(500).json({ msg: 'Internal Server Error' })
+        }
+
+        // token
+        const { accessToken, refreshToken } = tokenService.generateToken({ _id: user._id, activated: false })
+
+        res.cookie('refreshCookie', refreshToken, {
+            maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+            httpOnly: true
+        })
+
+        res.json({ accessToken })
+
     }
 }
 
