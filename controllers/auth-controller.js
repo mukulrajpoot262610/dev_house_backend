@@ -22,10 +22,11 @@ class AuthController {
 
         //sendOtp
         try {
-            await otpService.sendBySms(phone, otp);
+            // await otpService.sendBySms(phone, otp);
             res.status(200).json({
                 hash: `${hash}.${expires}`,
-                phone
+                phone,
+                otp
             })
         } catch (err) {
             console.log(err)
@@ -68,12 +69,19 @@ class AuthController {
         // token
         const { accessToken, refreshToken } = tokenService.generateToken({ _id: user._id, activated: false })
 
+        await tokenService.storeRefreshToken(refreshToken, user._id)
+
+        res.cookie('accessCookie', accessToken, {
+            maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+            httpOnly: true
+        })
+
         res.cookie('refreshCookie', refreshToken, {
             maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
             httpOnly: true
         })
 
-        res.json({ accessToken })
+        res.json({ auth: true, user })
 
     }
 }
