@@ -4,7 +4,7 @@ const refreshModal = require('../models/refresh-modal')
 class TokenService {
     generateToken(payload) {
         const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN_SECRET, {
-            expiresIn: '1m'
+            expiresIn: '6h'
         })
         const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_TOKEN_SECRET, {
             expiresIn: '1y'
@@ -38,6 +38,10 @@ class TokenService {
 
     async updateRefreshToken(userId, refreshToken) {
         return await refreshModal.updateOne({ userId: userId }, { token: refreshToken })
+    }
+
+    async removeToken(refreshToken) {
+        return await refreshModal.deleteOne({ token: refreshToken })
     }
 }
 

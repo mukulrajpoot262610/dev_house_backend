@@ -108,7 +108,7 @@ class AuthController {
         }
 
         // check valid user
-        const user = userService.findUser({ _id: userData._id })
+        const user = await userService.findUser({ _id: userData._id })
         if (!user) {
             return res.status(404).json({ msg: 'Invalid User' })
         }
@@ -136,6 +136,15 @@ class AuthController {
 
         // response
         res.json({ auth: true, user })
+    }
+
+    async logout(req, res) {
+        const { refreshCookie } = req.cookies
+        await tokenService.removeToken(refreshCookie)
+
+        res.clearCookie('refreshCookie')
+        res.clearCookie('accessCookie')
+        res.json({ user: null, auth: false })
     }
 }
 
