@@ -9,7 +9,7 @@ module.exports = async function (req, res, next) {
             throw new Error()
         }
 
-        const userData = tokenService.verifyAccessToken(accessCookie)
+        const userData = await tokenService.verifyAccessToken(accessCookie)
 
         if (!userData) {
             throw new Error()

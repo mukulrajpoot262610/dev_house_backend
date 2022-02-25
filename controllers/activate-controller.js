@@ -15,7 +15,7 @@ class activateController {
             const user = await userService.findUser({ _id: userId })
 
             if (!user) {
-                res.status(404).json({ msg: "User not found" })
+                return res.status(404).json({ msg: "User not found" })
             }
 
             user.activated = true;

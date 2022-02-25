@@ -4,7 +4,7 @@ const refreshModal = require('../models/refresh-modal')
 class TokenService {
     generateToken(payload) {
         const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN_SECRET, {
-            expiresIn: '1h'
+            expiresIn: '1m'
         })
         const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_TOKEN_SECRET, {
             expiresIn: '1y'
@@ -24,8 +24,20 @@ class TokenService {
         }
     }
 
-    verifyAccessToken(token) {
+    async verifyAccessToken(token) {
         return jwt.verify(token, process.env.JWT_ACCESS_TOKEN_SECRET)
+    }
+
+    async verifyRefreshToken(token) {
+        return jwt.verify(token, process.env.JWT_REFRESH_TOKEN_SECRET)
+    }
+
+    async findRefreshToken(userId, refreshToken) {
+        return await refreshModal.findOne({ userId: userId, token: refreshToken })
+    }
+
+    async updateRefreshToken(userId, refreshToken) {
+        return await refreshModal.updateOne({ userId: userId }, { token: refreshToken })
     }
 }
 
