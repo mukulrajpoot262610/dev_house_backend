@@ -18,6 +18,15 @@ class RoomsController {
 
     }
 
+    async index(req, res) {
+        try {
+            const rooms = await roomService.getAllRooms(['open'])
+            return res.json({ rooms })
+        } catch (err) {
+            res.status(500).json({ msg: "Internal Server Error" })
+        }
+    }
+
 }
 
 module.exports = new RoomsController()

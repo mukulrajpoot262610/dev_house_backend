@@ -20,6 +20,16 @@ class RoomService {
             return err
         }
     }
+
+    async getAllRooms(types) {
+        try {
+            const rooms = await roomModal.find({ type: { $in: types } }).populate('speakers').populate('ownerId').exec()
+            return rooms
+        } catch (err) {
+            console.log(err)
+            return err
+        }
+    }
 }
 
 module.exports = new RoomService()
