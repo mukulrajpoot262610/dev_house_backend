@@ -10,7 +10,7 @@ const cookieParser = require('cookie-parser')
 app.use(cookieParser())
 const corsOption = {
     credentials: true,
-    origin: ['http://localhost:3000', 'https://dev-house-frontend.vercel.app/']
+    origin: ['http://localhost:3000', 'https://dev-house-frontend.vercel.app']
 }
 app.use(cors(corsOption))
 
